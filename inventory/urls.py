@@ -8,5 +8,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("contact/", views.contact, name="contact"),
     path("create/", csrf_exempt(views.create), name="create"),
-    path("list/", csrf_exempt(views.list), name="list"),
+    path("list/", views.list, name="list"),
+    path("get/<int:id>", views.get, name="get"),
+    path("update/<int:id>", csrf_exempt(views.update), name="update"),
 ]

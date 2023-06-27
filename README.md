@@ -22,7 +22,7 @@ poetry run python manage.py startapp polls
 Spin up a PostgreSQL database:
 
 ```bash
-docker run --name academia-postgres -e POSTGRES_PASSWORD=academia -e POSTGRES_USER=academia -e POSTGRES_DB=academia -d postgres:15.3
+docker run --name academia-postgres -e POSTGRES_PASSWORD=academia -e POSTGRES_USER=academia -e POSTGRES_DB=academia -p 5432:5432 -d postgres:15.3
 ```
 
 Install:
