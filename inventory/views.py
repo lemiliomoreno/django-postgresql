@@ -3,25 +3,26 @@ import json
 from django.http import HttpResponse, JsonResponse
 
 from inventory.models import Inventory
-
-
-def index(request):
-    return HttpResponse("Hello, world. You're at the inventory index.")
-
-
-def contact(request):
-    return HttpResponse("Hello, world. You're at the inventory contact.")
+from inventory.utils.auth import validate_token
 
 
 def create(request):
     if request.method == "POST":
+        if not validate_token(dict(request.headers).get("X-Token")):
+            return JsonResponse(
+                {"message": "Invalid token"},
+                status=401,
+            )
+
         data = json.loads(request.body)
+
         Inventory.objects.create(
             name=data["name"],
             price=data["price"],
             category=data["category"],
             identifier=data["identifier"],
         )
+
         return JsonResponse(
             data,
             status=201,
@@ -36,6 +37,12 @@ def create(request):
 
 def list(request):
     if request.method == "GET":
+        if not validate_token(dict(request.headers).get("X-Token")):
+            return JsonResponse(
+                {"message": "Invalid token"},
+                status=401,
+            )
+
         response = [
             {
                 "id": inventory.id,
@@ -57,6 +64,12 @@ def list(request):
 
 def get(request, id: int):
     if request.method == "GET":
+        if not validate_token(dict(request.headers).get("X-Token")):
+            return JsonResponse(
+                {"message": "Invalid token"},
+                status=401,
+            )
+
         try:
             response = Inventory.objects.get(pk=id)
 
@@ -98,6 +111,11 @@ def update(request, id: int):
     data = json.loads(request.body)
 
     if request.method == "PUT":
+        if not validate_token(dict(request.headers).get("X-Token")):
+            return JsonResponse(
+                {"message": "Invalid token"},
+                status=401,
+            )
 
         try:
             object_to_update = Inventory.objects.get(pk=id)
@@ -119,6 +137,44 @@ def update(request, id: int):
                 },
                 status=200,
             )
+
+        except Inventory.DoesNotExist:
+            return JsonResponse(
+                {
+                    "message": f"Object with {id} does not exists",
+                },
+                status=404,
+            )
+
+        except Exception:
+            return JsonResponse(
+                {
+                    "message": "Internal Server Error",
+                },
+                status=500,
+            )
+
+    else:
+        return JsonResponse(
+            {"message": "Method not allowed"},
+            status=405,
+        )
+
+
+def delete(request, id: int):
+    if request.method == "DELETE":
+        if not validate_token(dict(request.headers).get("X-Token")):
+            return JsonResponse(
+                {"message": "Invalid token"},
+                status=401,
+            )
+
+        try:
+            object_to_update = Inventory.objects.get(pk=id)
+
+            object_to_update.delete()
+
+            return JsonResponse({}, status=204)
 
         except Inventory.DoesNotExist:
             return JsonResponse(
